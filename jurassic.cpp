@@ -63,7 +63,6 @@ public:
     		ctrl8.lock();
     		cout << "Car " << ID << " got visitor " << VID << " as a passanger\n";
     		visitorsServed++;
-    		visitorsWaiting.release();
     		ctrl8.unlock();
     		sleep((long) waitingTime); // to simulate the drive around
 
@@ -114,11 +113,15 @@ public:
     		cout << "Visitor " << ID << " is waiting for a car\n";
     		ctrl2.unlock();
     		carsAvailable -> acquire(); // wait to acquire a car
+    		ctrl8.lock();
+    		visitorsServed++;
+    		ctrl8.unlock();
     	}
-    	// else {
-
-
-    	// }
+    	else {
+    		ctrl8.lock();
+    		visitorsServed++;
+    		ctrl8.unlock();
+    	}
  
     }
 };
