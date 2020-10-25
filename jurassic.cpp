@@ -52,11 +52,11 @@ public:
     			indexOfNextVisitor++;
     		}
 
-    		cout << "Car " << ID << " got visitor " << VID << " as a passanger\n" 
+    		cout << "Car " << ID << " got visitor " << VID << " as a passanger\n";
     		sleep((long) waitingTime); // to simulate the drive around
 
     		ctrl4.lock();
-    		carsAvailable.release();
+    		carsAvailable -> release();
     		cout << "Car " << ID << " returned\n";
     		cout << "Visitor " << VID << " is leaving the park\n";
     		ctrl4.unlock();
@@ -93,11 +93,11 @@ public:
     	ctrl5.unlock();
 
 
-    	if(!carsAvailable.tryAcquire()){
+    	if(!carsAvailable -> tryAcquire()){
     		ctrl2.lock();
     		cout << "Visitor " << ID << " is waiting for a car\n";
     		ctrl2.unlock();
-    		carsAvailable.acquire(); // wait to acquire a car
+    		carsAvailable -> acquire(); // wait to acquire a car
     	}
     	// else {
 
