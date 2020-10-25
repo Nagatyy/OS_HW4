@@ -5,10 +5,11 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 using namespace std;
 
-QSemaphore carsAvailable;
+QSemaphore* carsAvailable;
 QSemaphore carsTaken;
 
 
@@ -33,8 +34,10 @@ private:
     int ID;
     int waitingTime;
 public:
-    Visitor(int ID, waitingTime){
+    Visitor(int ID, int waitingTime){
     	this -> ID = ID;
+    	this -> waitingTime = waitingTime;
+
     	cout << "Visitor " << ID << " Entered the park\n";
 
     	
@@ -62,10 +65,8 @@ int main(int argc, char** argv){
     Visitor* v[N];
     Car* c[M];
     int waitingTime;
-
-
     carsAvailable = new QSemaphore(M);
-    carsTaken = new QSemaphore(0);
+
 
     for(int i = 0; i < N; i++){
     	waitingTime = rand() % 5;    	
