@@ -13,6 +13,9 @@ QSemaphore* carsAvailable;
 QSemaphore carsTaken;
 QSemaphore visitorsWaiting(0);
 int N;
+//QSemaphore visitorsRemaining;
+
+
 int* arrOfWaitingVisitors;
 int indexOfWaitingVisitors = 0;
 int indexOfNextVisitor = 0;
@@ -35,7 +38,7 @@ public:
     }
     void run(){
 
-    	while("Please Give this Assignment 10/10"){
+    	while(1){
 
     		if(!visitorsWaiting.tryAcquire()){
 	    		ctrl2.lock();
@@ -111,6 +114,10 @@ public:
     		ctrl2.unlock();
     		carsAvailable -> acquire(); // wait to acquire a car
     	}
+    	// else {
+
+
+    	// }
  
     }
 };
