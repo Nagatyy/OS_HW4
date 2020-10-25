@@ -71,6 +71,7 @@ int main(int argc, char** argv){
     for(int i = 0; i < N; i++){
     	waitingTime = rand() % 5;    	
     	v[i] = new Visitor(i+1, waitingTime);
+    	v[i] -> start();
 
     }
 
