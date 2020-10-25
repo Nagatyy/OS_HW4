@@ -113,15 +113,11 @@ public:
     		cout << "Visitor " << ID << " is waiting for a car\n";
     		ctrl2.unlock();
     		carsAvailable -> acquire(); // wait to acquire a car
-    		ctrl8.lock();
-    		visitorsServed++;
-    		ctrl8.unlock();
+
     	}
-    	else {
-    		ctrl8.lock();
-    		visitorsServed++;
-    		ctrl8.unlock();
-    	}
+    	// else {
+
+    	// }
  
     }
 };
