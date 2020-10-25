@@ -12,14 +12,16 @@ using namespace std;
 QSemaphore* carsAvailable;
 QSemaphore carsTaken;
 QSemaphore visitorsWaiting(0);
+int N;
 //QSemaphore visitorsRemaining;
 
 
 int* arrOfWaitingVisitors;
 int indexOfWaitingVisitors = 0;
 int indexOfNextVisitor = 0;
+int visitorsServed = 0;
 
-QMutex ctrl1, ctrl2, ctrl3, ctrl4, ctrl5;
+QMutex ctrl1, ctrl2, ctrl3, ctrl4, ctrl5, ctrl6, ctrl7, ctrl8;
 
 
 
@@ -43,16 +45,25 @@ public:
 	    		cout << "Car " << ID << " is waiting for a visitor\n";
 	    		ctrl2.unlock();
 	    		visitorsWaiting.acquire(); // the car waits until it can aquire a visitor
+
+	    		ctrl6.lock();
 	    		VID = arrOfWaitingVisitors[indexOfNextVisitor];
 	    		indexOfNextVisitor++;
+	    		ctrl6.unlock();
     		}
     		else {
     			// if it can aquire immediatly, then
+    			ctrl7.lock();
     			VID = arrOfWaitingVisitors[indexOfNextVisitor];
     			indexOfNextVisitor++;
+    			ctrl7.unlock();
     		}
 
+
+    		ctrl8.lock();
     		cout << "Car " << ID << " got visitor " << VID << " as a passanger\n";
+    		visitorsServed++;
+    		ctrl8.unlock();
     		sleep((long) waitingTime); // to simulate the drive around
 
     		ctrl4.lock();
@@ -60,6 +71,10 @@ public:
     		cout << "Car " << ID << " returned\n";
     		cout << "Visitor " << VID << " is leaving the park\n";
     		ctrl4.unlock();
+
+    		// break once all visitors have been served
+    		if(visitorsServed == N) 
+    			break;
 
     	}
     	
@@ -117,7 +132,7 @@ int main(int argc, char** argv){
         return 0; 
     }
     
-    int N = atoi(argv[1]);					// number of visitors
+    N = atoi(argv[1]);					// number of visitors
     int M = atoi(argv[2]);                 	// number of cars
 
     Visitor* v[N];
