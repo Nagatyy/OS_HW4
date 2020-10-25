@@ -11,20 +11,59 @@ using namespace std;
 
 QSemaphore* carsAvailable;
 QSemaphore carsTaken;
+QSemaphore visitorsWaiting(0);
+//QSemaphore visitorsRemaining;
+
+
+int* arrOfWaitingVisitors;
+int indexOfWaitingVisitors = 0;
+int indexOfNextVisitor = 0;
+
+QMutex ctrl1, ctrl2, ctrl3, ctrl4, ctrl5;
 
 
 
 class Car : public QThread{
 private:
     int ID;
+    int VID;
+    int waitingTime;
 public:
-    Car(int ID){     
+    Car(int ID, int waitingTime){     
         this -> ID = ID + 1;
-
+        this -> waitingTime = waitingTime;
 
     }
     void run(){
-           
+
+    	while(1){
+
+    		if(!visitorsWaiting.tryAcquire()){
+	    		ctrl2.lock();
+	    		cout << "Car " << ID << " is waiting for a visitor\n";
+	    		ctrl2.unlock();
+	    		visitorsWaiting.acquire(); // the car waits until it can aquire a visitor
+	    		VID = arrOfWaitingVisitors[indexOfNextVisitor];
+	    		indexOfNextVisitor++;
+    		}
+    		else {
+    			// if it can aquire immediatly, then
+    			VID = arrOfWaitingVisitors[indexOfNextVisitor];
+    			indexOfNextVisitor++;
+    		}
+
+    		cout << "Car " << ID << " got visitor " << VID << " as a passanger\n" 
+    		sleep((long) waitingTime); // to simulate the drive around
+
+    		ctrl4.lock();
+    		carsAvailable.release();
+    		cout << "Car " << ID << " returned\n";
+    		cout << "Visitor " << VID << " is leaving the park\n";
+    		ctrl4.unlock();
+
+    	}
+    	
+
     }
 };
 
@@ -35,16 +74,35 @@ private:
     int waitingTime;
 public:
     Visitor(int ID, int waitingTime){
-    	this -> ID = ID;
+    	this -> ID = ID + 1;					// IDs start at 1
     	this -> waitingTime = waitingTime;
 
+    	ctrl1.lock();
     	cout << "Visitor " << ID << " Entered the park\n";
+    	ctrl1.unlock();
 
-    	
     } 
     void run(){
     	sleep((long) waitingTime);
-    	cout << "Visitor " << ID << " slept for " << waitingTime << " seconds\n";
+
+    	// a visitor is added to the array after they wake up, visitorsWaiting semaphore is also incremented
+    	ctrl5.lock();
+    	arrOfWaitingVisitors[indexOfWaitingVisitors] = ID;
+    	indexOfWaitingVisitors++;
+    	visitorsWaiting.release();
+    	ctrl5.unlock();
+
+
+    	if(!carsAvailable.tryAcquire()){
+    		ctrl2.lock();
+    		cout << "Visitor " << ID << " is waiting for a car\n";
+    		ctrl2.unlock();
+    		carsAvailable.acquire(); // wait to acquire a car
+    	}
+    	// else {
+
+
+    	// }
  
     }
 };
@@ -64,18 +122,27 @@ int main(int argc, char** argv){
 
     Visitor* v[N];
     Car* c[M];
+    arrOfWaitingVisitors = new int[N];
     int waitingTime;
     carsAvailable = new QSemaphore(M);
 
-
     for(int i = 0; i < N; i++){
-    	waitingTime = rand() % 5;    	
-    	v[i] = new Visitor(i+1, waitingTime);
+    	waitingTime = 1 + rand() % 5;    // a visitor will roam for 1-5 seconds	
+    	v[i] = new Visitor(i, waitingTime);
     	v[i] -> start();
+    }
+
+    for(int i = 0; i < M; i++){
+    	waitingTime = 1 + rand() % 3;	// a car will drive for 1-3 seconds
+    	c[i] = new Car(i, waitingTime);
+    	c[i] -> start();
     }
 
     for(int i = 0; i < N; i++)
         v[i] -> wait();
+
+    for(int i = 0; i < M; i++)
+    	c[i] -> wait();
 
   
     return 0;
